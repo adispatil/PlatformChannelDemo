@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:platform_channel_demo/service/platform_channel_service.dart';
 
 class CalculatorWidget extends StatefulWidget {
   const CalculatorWidget({super.key});
@@ -12,6 +13,7 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
   final _num2Controller = TextEditingController();
   double _result = 0;
   String _operation = '+';
+  PlatformChannelService _platformChannelService = PlatformChannelService();
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +73,12 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: () {}, child: const Text('Calculate')),
+            ElevatedButton(
+              onPressed: () {
+                _calculate();
+              },
+              child: const Text('Calculate'),
+            ),
             const SizedBox(height: 16),
             Text('Result: $_result', style: const TextStyle(fontSize: 18)),
           ],
@@ -85,5 +92,20 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
     _num1Controller.dispose();
     _num2Controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _calculate() async {
+    final num1 = double.tryParse(_num1Controller.text) ?? 0.0;
+    final num2 = double.tryParse(_num2Controller.text) ?? 0.0;
+
+    final result = await _platformChannelService.performCalculation(
+      num1: num1,
+      num2: num2,
+      operation: _operation,
+    );
+
+    setState(() {
+      _result = result;
+    });
   }
 }
